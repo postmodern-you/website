@@ -238,6 +238,22 @@
       box-shadow: 0 4px 20px rgba(99,102,241,0.3);
     }
     .form-submit:hover { background: var(--accent2); transform: translateY(-1px); }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .fs-success { display: none; }
+    .fs-success-inner {
+      background: var(--bg3); border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 16px; padding: 40px 32px; text-align: center;
+    }
+    .fs-success-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(34,197,94,0.15); color: #22c55e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; margin: 0 auto 16px;
+    }
+    .fs-success-inner h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .fs-success-inner p { font-size: 0.9rem; color: var(--muted); }
+    .fs-field-error { font-size: 0.8rem; color: #f87171; margin-top: 4px; display: block; min-height: 1em; }
+    .fs-form-error { font-size: 0.875rem; color: #f87171; margin-bottom: 12px; }
 
     /* FOOTER */
     footer { border-top: 1px solid var(--border); padding: 48px 0 32px; }
@@ -464,39 +480,39 @@
         </div>
       </div>
       <div class="fade-up">
-        <form class="contact-form" onsubmit="handleSubmit(event)">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="fname">First name</label>
-              <input type="text" id="fname" placeholder="Alex" />
-            </div>
-            <div class="form-group">
-              <label for="lname">Last name</label>
-              <input type="text" id="lname" placeholder="Johnson" />
-            </div>
+        <div data-fs-success class="fs-success" style="display:none">
+          <div class="fs-success-inner">
+            <div class="fs-success-icon">✓</div>
+            <h3>Message received</h3>
+            <p>We'll get back to you within one business day.</p>
+          </div>
+        </div>
+        <div data-fs-error class="fs-form-error"></div>
+
+        <form class="contact-form" id="contact-form">
+          <div class="form-group">
+            <label for="c-name">Your name</label>
+            <input type="text" id="c-name" name="name" placeholder="Alex Johnson" required data-fs-field />
+            <span class="fs-field-error" data-fs-error="name"></span>
           </div>
           <div class="form-group">
-            <label for="email">Email address</label>
-            <input type="email" id="email" placeholder="alex@company.com" />
+            <label for="c-email">Email address</label>
+            <input type="email" id="c-email" name="email" placeholder="alex@example.com" required data-fs-field />
+            <span class="fs-field-error" data-fs-error="email"></span>
           </div>
           <div class="form-group">
-            <label for="service">Service needed</label>
-            <select id="service">
-              <option value="">Select a service…</option>
-              <option>iOS Development</option>
-              <option>Android Development</option>
-              <option>Scientific Software</option>
-              <option>Backend &amp; APIs</option>
-              <option>DevOps &amp; Deployment</option>
-              <option>Other / Not sure yet</option>
-            </select>
+            <label for="c-message">Message</label>
+            <textarea id="c-message" name="message" rows="6" placeholder="Tell us about your project." required data-fs-field></textarea>
+            <span class="fs-field-error" data-fs-error="message"></span>
           </div>
-          <div class="form-group">
-            <label for="message">Tell us about your project</label>
-            <textarea id="message" rows="4" placeholder="What are you building? What's your timeline and budget range?"></textarea>
-          </div>
-          <button type="submit" class="form-submit">Send Message →</button>
+          <button type="submit" class="form-submit" data-fs-submit-btn>Send Message →</button>
         </form>
+
+        <script>
+          window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+          formspree('initForm', { formElement: '#contact-form', formId: 'mojzzaoy' });
+        </script>
+        <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
       </div>
     </div>
   </div>
@@ -552,15 +568,7 @@
   );
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    const btn = e.target.querySelector('.form-submit');
-    btn.textContent = 'Message sent!';
-    btn.style.background = '#059669';
-    setTimeout(() => { btn.textContent = 'Send Message →'; btn.style.background = ''; }, 3000);
-  }
-
-  function toggleMenu(el) {
+function toggleMenu(el) {
     const links = document.querySelector('.nav-links');
     const cta = document.querySelector('.nav-cta');
     const open = links.style.display === 'flex';
