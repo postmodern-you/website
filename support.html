@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Support — Postmodern You LLC</title>
   <meta name="description" content="Get help with apps and services from Postmodern You LLC. Browse FAQs or contact our support team directly." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -16,7 +14,7 @@
       --text: #f9fafb; --muted: #9ca3af; --faint: #4b5563;
     }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
     a { color: var(--accent2); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
@@ -351,39 +349,30 @@
         </div>
       </div>
       <div class="fade-up">
-        <div data-fs-success class="fs-success" style="display:none">
+        <div id="support-success" class="fs-success" style="display:none">
           <div class="fs-success-inner">
             <div class="fs-success-icon">✓</div>
             <h3>Message received</h3>
             <p>We'll get back to you within one business day.</p>
           </div>
         </div>
-        <div data-fs-error class="fs-form-error"></div>
+        <div id="support-error" class="fs-form-error"></div>
 
         <form class="support-form" id="support-form">
           <div class="form-group">
             <label for="s-name">Your name</label>
-            <input type="text" id="s-name" name="name" placeholder="Alex Johnson" required data-fs-field />
-            <span class="fs-field-error" data-fs-error="name"></span>
+            <input type="text" id="s-name" name="name" placeholder="Alex Johnson" required />
           </div>
           <div class="form-group">
             <label for="s-email">Email address</label>
-            <input type="email" id="s-email" name="email" placeholder="alex@example.com" required data-fs-field />
-            <span class="fs-field-error" data-fs-error="email"></span>
+            <input type="email" id="s-email" name="email" placeholder="alex@example.com" required />
           </div>
           <div class="form-group">
             <label for="s-message">Message</label>
-            <textarea id="s-message" name="message" rows="6" placeholder="How can we help?" required data-fs-field></textarea>
-            <span class="fs-field-error" data-fs-error="message"></span>
+            <textarea id="s-message" name="message" rows="6" placeholder="How can we help?" required></textarea>
           </div>
-          <button type="submit" class="form-submit" data-fs-submit-btn>Send Message →</button>
+          <button type="submit" class="form-submit">Send Message →</button>
         </form>
-
-        <script>
-          window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-          formspree('initForm', { formElement: '#support-form', formId: 'mojzzaoy' });
-        </script>
-        <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
       </div>
     </div>
   </div>
@@ -406,6 +395,34 @@
     { threshold: 0.1 }
   );
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  document.getElementById('support-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('[type=submit]');
+    const errorEl = document.getElementById('support-error');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    errorEl.textContent = '';
+    try {
+      const res = await fetch('https://formspree.io/f/mojzzaoy', {
+        method: 'POST', body: new FormData(this),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        this.style.display = 'none';
+        document.getElementById('support-success').style.display = '';
+      } else {
+        const data = await res.json();
+        errorEl.textContent = (data.errors || []).map(e => e.message).join(', ') || 'Something went wrong. Please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Send Message →';
+      }
+    } catch {
+      errorEl.textContent = 'Something went wrong. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Send Message →';
+    }
+  });
 
   // FAQ accordion
   function toggleFaq(btn) {

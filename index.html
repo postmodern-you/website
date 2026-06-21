@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Postmodern You LLC — Building apps for your postmodern world</title>
   <meta name="description" content="Postmodern You LLC builds innovative iOS and Android applications that meet the demands of today's fast-moving digital landscape." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,7 +23,7 @@
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
@@ -480,39 +477,30 @@
         </div>
       </div>
       <div class="fade-up">
-        <div data-fs-success class="fs-success" style="display:none">
+        <div id="contact-success" class="fs-success" style="display:none">
           <div class="fs-success-inner">
             <div class="fs-success-icon">✓</div>
             <h3>Message received</h3>
             <p>We'll get back to you within one business day.</p>
           </div>
         </div>
-        <div data-fs-error class="fs-form-error"></div>
+        <div id="contact-error" class="fs-form-error"></div>
 
         <form class="contact-form" id="contact-form">
           <div class="form-group">
             <label for="c-name">Your name</label>
-            <input type="text" id="c-name" name="name" placeholder="Alex Johnson" required data-fs-field />
-            <span class="fs-field-error" data-fs-error="name"></span>
+            <input type="text" id="c-name" name="name" placeholder="Alex Johnson" required />
           </div>
           <div class="form-group">
             <label for="c-email">Email address</label>
-            <input type="email" id="c-email" name="email" placeholder="alex@example.com" required data-fs-field />
-            <span class="fs-field-error" data-fs-error="email"></span>
+            <input type="email" id="c-email" name="email" placeholder="alex@example.com" required />
           </div>
           <div class="form-group">
             <label for="c-message">Message</label>
-            <textarea id="c-message" name="message" rows="6" placeholder="Tell us about your project." required data-fs-field></textarea>
-            <span class="fs-field-error" data-fs-error="message"></span>
+            <textarea id="c-message" name="message" rows="6" placeholder="Tell us about your project." required></textarea>
           </div>
-          <button type="submit" class="form-submit" data-fs-submit-btn>Send Message →</button>
+          <button type="submit" class="form-submit">Send Message →</button>
         </form>
-
-        <script>
-          window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-          formspree('initForm', { formElement: '#contact-form', formId: 'mojzzaoy' });
-        </script>
-        <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
       </div>
     </div>
   </div>
@@ -567,6 +555,34 @@
     { threshold: 0.12 }
   );
   document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('[type=submit]');
+    const errorEl = document.getElementById('contact-error');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    errorEl.textContent = '';
+    try {
+      const res = await fetch('https://formspree.io/f/mojzzaoy', {
+        method: 'POST', body: new FormData(this),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        this.style.display = 'none';
+        document.getElementById('contact-success').style.display = '';
+      } else {
+        const data = await res.json();
+        errorEl.textContent = (data.errors || []).map(e => e.message).join(', ') || 'Something went wrong. Please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Send Message →';
+      }
+    } catch {
+      errorEl.textContent = 'Something went wrong. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Send Message →';
+    }
+  });
 
 function toggleMenu(el) {
     const links = document.querySelector('.nav-links');
